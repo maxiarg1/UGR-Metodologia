@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría MTProto 2.0 - Dashboard</title>
+    
+    <!-- Tailwind CSS (Framework de diseño) importado desde CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons (Iconos) importado desde CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- CSS Personalizado para animaciones -->
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        /* Oculta el scrollbar pero permite hacer scroll (opcional para un diseño más limpio) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-200 p-4 md:p-8 font-sans">
+    
+    <div class="max-w-4xl mx-auto">
+        <!-- Encabezado -->
+        <header class="mb-8 text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-3">
+                Auditoría MTProto 2.0
+            </h1>
+            <h2 class="text-slate-400 text-lg">Guía de Estudio - Trabajo Final Ciberseguridad UGR</h2>
+            <p class="text-sm text-slate-500 mt-2">Autores: Argañaras & Becette</p>
+        </header>
+
+        <!-- Navegación (Pestañas) -->
+        <div class="flex flex-wrap gap-2 mb-8 border-b border-slate-800 pb-4" id="tabs-container">
+            <!-- Los botones se generan dinámicamente con JavaScript -->
+        </div>
+
+        <!-- Área de Contenido Principal -->
+        <main class="min-h-[400px]" id="content-area">
+            <!-- El contenido se inyecta aquí dinámicamente -->
+        </main>
+    </div>
+
+    <!-- Lógica JavaScript del Dashboard -->
+    <script>
+        // Estado actual
+        let activeTab = 'resumen';
+
+        // Definición de las pestañas
+        const tabs = [
+            { id: 'resumen', label: 'Resumen y Objetivos', icon: 'book-open' },
+            { id: 'metodologia', label: 'Metodología', icon: 'crosshair' },
+            { id: 'vulnerabilidades', label: 'Vulnerabilidades', icon: 'alert-triangle' },
+            { id: 'iocs', label: 'IoCs y Vectores', icon: 'radar' },
+            { id: 'glosario', label: 'Glosario Técnico', icon: 'file-text' },
+            { id: 'conclusiones', label: 'Conclusiones y Recomendaciones', icon: 'check-circle' },
+            { id: 'guion', label: 'Guión de Defensa', icon: 'mic' },
+            { id: 'preguntas', label: 'Simulador Jurado', icon: 'help-circle' }
+        ];
+
+        // Datos de vulnerabilidades
+        const vulnerabilidades = [
+            { id: 'V-01', nombre: 'Unknown Key-Share (UKS) en rekeying', cvss: '7.4', severidad: 'Alta', categoria: 'Protocolar', fuente: 'Miculan & Vitacolonna (2021)' },
+            { id: 'V-02', nombre: 'Reordenamiento y borrado de mensajes', cvss: '7.1', severidad: 'Alta', categoria: 'Protocolar', fuente: 'Albrecht et al. (2022)' },
+            { id: 'V-03', nombre: 'Timing side-channel en clientes', cvss: '5.9', severidad: 'Media', categoria: 'Implementación', fuente: 'Albrecht et al. (2022)' },
+            { id: 'V-04', nombre: 'Replay attacks en bibliotecas de terceros', cvss: '6.5', severidad: 'Media', categoria: 'Implementación', fuente: 'Von Arx & Paterson (2023)' },
+            { id: 'V-05', nombre: 'Exfiltración de claves vía padding (ASA)', cvss: '8.1', severidad: 'Alta', categoria: 'Criptográfica', fuente: 'Cogliati et al. (2023)' },
+            { id: 'V-06', nombre: 'Ausencia de E2EE por defecto', cvss: '6.8', severidad: 'Media', categoria: 'Arquitectural', fuente: 'Telegram (2024)' }
+        ];
+
+        // Datos del Guión
+        const slidesGuion = [
+            { id: '01', titulo: 'Portada', tiempo: '0:30', accion: 'Mientras aparece la portada, uno de los dos toma la palabra.', texto: 'Buenas tardes. Somos Maximiliano Argañaras y Raúl Ignacio Becette... Hoy presentamos nuestro Trabajo Práctico Final de Metodología de la Investigación...' },
+            { id: '02', titulo: 'El Problema: percepción vs. realidad', tiempo: '1:30', accion: 'Señalar columna verde (usuario) primero, luego la naranja (técnica).', texto: '¿Es Telegram realmente seguro? La mayoría cree que todos sus mensajes tienen E2EE. La realidad técnica: solo los "chats secretos" lo tienen. El 99% de los chats regulares alojan sus claves en los servidores de Telegram.' },
+            { id: '03', titulo: 'Metodología: Diseño Mixto', tiempo: '1:00', accion: 'Recorrer las 4 fases (lectura, ProVerif, empírico, normativo).', texto: 'Diseñamos una investigación mixta secuencial en 4 fases para responder a la hipótesis. Combinamos datos duros (CVSS) con interpretación cualitativa de impacto.' },
+            { id: '04', titulo: 'Hallazgos CVSS', tiempo: '1:30', accion: 'Señalar gráfico de barras y luego panel de métricas.', texto: 'Identificamos 6 vulnerabilidades. Las tres más graves superan CVSS 7.0 (exfiltración vía padding 8.1, UKS 7.4). El 50% son Alta severidad. Las primitivas (AES) están bien, el problema es su implementación.' },
+            { id: '05', titulo: 'Matriz de Riesgo (NIST 800-30)', tiempo: '0:45', accion: 'Señalar las 3 celdas rojas.', texto: 'Cruzamos probabilidad de explotación con impacto. Tenemos tres en zona roja. La ausencia de E2EE por defecto es la más crítica organizacionalmente por su probabilidad.' },
+            { id: '06', titulo: 'Trazabilidad', tiempo: '0:45', accion: 'Recorrer cada tarjeta vinculando Objetivo -> Resultado.', texto: 'Trazabilidad pura: Cada dato responde a un objetivo. Análisis formal confirmó UKS. Análisis de vectores dio 6 vulns. Contraste NIST dio ~60% de cumplimiento.' },
+            { id: '07', titulo: 'Hipótesis', tiempo: '1:00', accion: 'Señalar badge de "Aceptada Parcialmente" y tarjetas.', texto: 'Veredicto: Aceptada parcialmente. Las vulnerabilidades estructurales existen y son detectables, pero su explotación requiere condiciones específicas (MitM). El riesgo es contextual.' },
+            { id: '08', titulo: 'BMIS / CISO', tiempo: '1:00', accion: 'Señalar los 4 nodos (Gobernanza, Factor Humano, Arq, Emergencia).', texto: 'Desde la Gobernanza: brecha de control (costo de USD 200/registro). Factor Humano: falsa sensación de seguridad. Arquitectura: canal externo fuera de perímetro. Emergencia: librerías de terceros fallando.' },
+            { id: '09', titulo: 'KPIs/KRIs y Controles', tiempo: '1:00', accion: 'Señalar semáforos rojos y luego los 3 controles propuestos.', texto: 'Los 5 KRIs están en rojo (0% cobertura E2EE). Recomendamos 3 controles, destacando una política que prohíba Telegram para datos sensibles por su gran ratio costo/beneficio.' },
+            { id: '10', titulo: 'Recomendaciones y Cierre', tiempo: '1:00', accion: 'Cerrar leyendo la recomendación del banner inferior.', texto: 'Usuarios: solo chats secretos. Empresas: restringir confidencialidad. Recomendación CISO: Usar para info no sensible con controles compensatorios; lo sensible a Signal/WhatsApp.' }
+        ];
+
+        // Banco de Preguntas Anticipadas
+        const bancoPreguntas = [
+            { tipo: 'Metodología', p: '¿Por qué eligieron un enfoque observacional y no puramente experimental?', r: 'Porque MTProto 2.0 es un sistema en producción. No podemos intervenir servidores. Usamos datos existentes (código público, papers).', pista: 'Recordar clase 4 (Matías): "En ciberseguridad el sistema ya existe o el ataque ya ocurrió."' },
+            { tipo: 'Metodología', p: '¿Cuál es la diferencia entre los resultados y las conclusiones de su trabajo?', r: 'El resultado es el dato objetivo (6 vulnerabilidades, 50% con CVSS alta). La conclusión es nuestra interpretación analítica (riesgo contextual, hipótesis parcial).', pista: 'Recordar a Sabino (1996) y lo insistido en clase 9.' },
+            { tipo: 'Hallazgos', p: '¿Cuál de las 6 vulnerabilidades consideran la más crítica y por qué?', r: 'Depende. Técnicamente V-05 (Padding ASA, 8.1). Organizacionalmente V-06 (Falta E2EE, 6.8) porque afecta a todos los usuarios en chats regulares.', pista: 'Cada organización pondera según sus "joyas de la corona".' },
+            { tipo: 'Trampa', p: '¿No es contradictorio decir "robusto en primitivas" pero "vulnerabilidades estructurales"?', r: 'No. Los algoritmos base (AES, RSA) son estándar (ladrillos sólidos). El problema es cómo se combinan en la arquitectura (padding, rekeying) dejando fisuras.', pista: 'NIST advierte: no alcanza con buenos algoritmos, la implementación es clave.' },
+            { tipo: 'ISACA/BMIS', p: '¿Cómo le explicarían a un CEO por qué debería preocuparse por MTProto 2.0?', r: 'Traduciéndolo a negocio: No hablamos de Padding Oracles. Hablamos de Riesgo reputacional, multas de cumplimiento, y controles de bajo costo como Políticas de Uso.', pista: 'Clase 8 (Pedro Adamovich): "Empecé protegiendo sistemas, ahora protejo decisiones".' },
+            { tipo: 'Validación', p: '¿Cómo garantizan la reproducibilidad sin acceso al servidor?', r: 'Documentamos el entorno completo (Ubuntu, Docker, versiones de ProVerif, hashes SHA-256). Triangulamos con literatura académica (IEEE) y documentación oficial.', pista: 'La limitación del servidor está explícitamente documentada en la tesis.' },
+            { tipo: 'Limitación', p: '¿Si Telegram actualiza el protocolo mañana, la investigación pierde validez?', r: 'No. Está delimitada temporalmente (2024-2025). Además, V-06 (ausencia E2EE por defecto) es una decisión arquitectural pesada (por sincronización) difícil de cambiar.', pista: 'Demuestra rigor al entender la delimitación temporal del objeto de estudio.' }
+        ];
+
+        // Función para cambiar de pestaña
+        function changeTab(tabId) {
+            activeTab = tabId;
+            renderTabs();
+            renderContent();
+        }
+
+        // Renderizar los botones de navegación
+        function renderTabs() {
+            const container = document.getElementById('tabs-container');
+            container.innerHTML = ''; // Limpiar contenedor
+
+            tabs.forEach(tab => {
+                const isActive = activeTab === tab.id;
+                
+                // Clases de Tailwind dinámicas según estado
+                const baseClasses = "flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer";
+                const activeClasses = isActive 
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" 
+                    : "bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200";
+                const iconAnimClass = isActive ? "animate-pulse" : "";
+
+                const button = document.createElement('button');
+                button.className = `${baseClasses} ${activeClasses}`;
+                button.onclick = () => changeTab(tab.id);
+                
+                button.innerHTML = `
+                    <i data-lucide="${tab.icon}" class="w-4 h-4 ${iconAnimClass}"></i>
+                    ${tab.label}
+                `;
+                
+                container.appendChild(button);
+            });
+        }
+
+        // Renderizar el contenido principal
+        function renderContent() {
+            const container = document.getElementById('content-area');
+            let contentHTML = '';
+
+            if (activeTab === 'resumen') {
+                contentHTML = `
+                    <div class="space-y-6 animate-fade-in">
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                            <h3 class="text-xl font-bold text-blue-400 mb-3 flex items-center gap-2">
+                                <i data-lucide="shield" class="w-5 h-5"></i> El Problema de Investigación
+                            </h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                Telegram utiliza <strong>MTProto 2.0</strong>, un protocolo criptográfico propietario ("homegrown"). La controversia radica en que <strong>no implementa cifrado de extremo a extremo (E2EE) por defecto</strong> en chats regulares. ¿Constituye esto y su arquitectura no estándar una vulnerabilidad frente a protocolos abiertos y auditados?
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                                <h4 class="text-lg font-semibold text-emerald-400 mb-2">Objetivo General</h4>
+                                <p class="text-slate-300 text-sm">
+                                    Evaluar la robustez técnica de MTProto 2.0 en comparación con estándares internacionales (NIST SP 800-57) para determinar su eficacia (2024-2025).
+                                </p>
+                            </div>
+                            <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                                <h4 class="text-lg font-semibold text-emerald-400 mb-2">Estándares Utilizados</h4>
+                                <ul class="text-slate-300 text-sm space-y-1 list-disc list-inside">
+                                    <li><strong>NIST SP 800-57:</strong> Gestión de claves.</li>
+                                    <li><strong>ENISA:</strong> Reporte de amenazas (Threat Landscape).</li>
+                                    <li><strong>MITRE ATT&CK:</strong> Tácticas y técnicas.</li>
+                                    <li><strong>OWASP WSTG:</strong> Metodología de pruebas.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (activeTab === 'metodologia') {
+                contentHTML = `
+                    <div class="space-y-6 animate-fade-in">
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                            <h3 class="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
+                                <i data-lucide="crosshair" class="w-5 h-5"></i> Diseño Metodológico
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-slate-900 p-4 rounded-lg">
+                                    <span class="block text-xs text-slate-500 uppercase font-bold mb-1">Enfoque</span>
+                                    <span class="text-slate-200">Mixto Secuencial (Descriptivo-Correlacional)</span>
+                                </div>
+                                <div class="bg-slate-900 p-4 rounded-lg">
+                                    <span class="block text-xs text-slate-500 uppercase font-bold mb-1">Muestra</span>
+                                    <span class="text-slate-200">Chats secretos (Clientes oficiales y terceros)</span>
+                                </div>
+                                <div class="bg-slate-900 p-4 rounded-lg">
+                                    <span class="block text-xs text-slate-500 uppercase font-bold mb-1">Taxonomía</span>
+                                    <span class="text-slate-200">CVSS v3.1 para evaluación de riesgo</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                            <h3 class="text-xl font-bold text-indigo-400 mb-4 flex items-center gap-2">
+                                <i data-lucide="code" class="w-5 h-5"></i> Herramientas de Análisis
+                            </h3>
+                            <ul class="space-y-3 text-slate-300">
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="server" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
+                                    <div><strong>ProVerif & Tamarin Prover:</strong> Análisis formal simbólico y computacional de los protocolos criptográficos.</div>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i data-lucide="lock" class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5"></i>
+                                    <div><strong>OWASP WSTG-CRYP:</strong> Pruebas controladas de cifrado (SSL/TLS débiles, Padding Oracles).</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } else if (activeTab === 'vulnerabilidades') {
+                let vulnsHTML = vulnerabilidades.map(vuln => {
+                    const sevClass = vuln.severidad === 'Alta' 
+                        ? 'bg-red-500/20 text-red-400 border-red-500/30' 
+                        : 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+                    
+                    return `
+                        <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:border-slate-500 transition-colors">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-slate-700 text-slate-300 text-xs px-2 py-1 rounded font-mono">${vuln.id}</span>
+                                    <h4 class="font-bold text-slate-100">${vuln.nombre}</h4>
+                                </div>
+                                <p class="text-sm text-slate-400">Fuente: ${vuln.fuente} &bull; Categoría: ${vuln.categoria}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="text-right hidden sm:block">
+                                    <div class="text-xs text-slate-500 uppercase font-bold">CVSS v3.1</div>
+                                    <div class="font-mono text-lg text-slate-200">${vuln.cvss}</div>
+                                </div>
+                                <span class="px-3 py-1.5 rounded-full text-sm font-bold shadow-sm border ${sevClass}">
+                                    ${vuln.severidad}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                contentHTML = `
+                    <div class="space-y-4 animate-fade-in">
+                        <p class="text-slate-300 mb-4">Se identificaron 6 vulnerabilidades principales basadas en el análisis bibliográfico y verificación formal:</p>
+                        <div class="grid gap-4">
+                            ${vulnsHTML}
+                        </div>
+                    </div>
+                `;
+            } else if (activeTab === 'iocs') {
+                contentHTML = `
+                    <div class="space-y-6 animate-fade-in">
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                            <h3 class="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
+                                <i data-lucide="radar" class="w-5 h-5"></i> Indicadores de Compromiso (IoCs)
+                            </h3>
+                            <ul class="space-y-4 text-slate-300">
+                                <li class="flex items-start gap-3">
+                                    <div class="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                                    <p><strong>Patrones de reutilización de nonces:</strong> Detección de valores únicos reutilizados que comprometen la seguridad del cifrado. Evitan replay attacks y garantizan frescura.</p>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                                    <p><strong>Anomalías en tiempos de respuesta:</strong> Variaciones temporales que pueden indicar ataques de canal lateral o timing attacks.</p>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="w-2 h-2 rounded-full bg-red-500 mt-2 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                                    <p><strong>Firmas de padding oracle:</strong> Patrones de respuesta que revelan información sobre la validez del padding en mensajes cifrados.</p>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                            <h3 class="text-xl font-bold text-orange-400 mb-4 flex items-center gap-2">
+                                <i data-lucide="swords" class="w-5 h-5"></i> Vectores de Ataque Documentados
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700/50">
+                                    <h4 class="text-orange-300 font-bold mb-2">Rekeying Attacks</h4>
+                                    <p class="text-sm text-slate-400">Explotación de debilidades en el proceso de renovación de claves de sesión (UKS).</p>
+                                </div>
+                                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700/50">
+                                    <h4 class="text-orange-300 font-bold mb-2">Padding Oracle</h4>
+                                    <p class="text-sm text-slate-400">Aprovechamiento de información filtrada pasivamente durante la validación de padding aleatorio (ASA).</p>
+                                </div>
+                                <div class="bg-slate-900 p-4 rounded-lg border border-slate-700/50">
+                                    <h4 class="text-orange-300 font-bold mb-2">Auth Bypass</h4>
+                                    <p class="text-sm text-slate-400">Técnicas para eludir mecanismos de autenticación en el establecimiento de sesiones.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (activeTab === 'glosario') {
+                contentHTML = `
+                    <div class="space-y-4 animate-fade-in">
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                            <h3 class="text-xl font-bold text-blue-400 mb-6 flex items-center gap-2">
+                                <i data-lucide="file-text" class="w-5 h-5"></i> Definiciones Operativas (Marco Teórico)
+                            </h3>
+                            
+                            <div class="space-y-4">
+                                <div class="p-4 bg-slate-900/50 rounded-lg border-l-4 border-blue-500">
+                                    <h4 class="font-bold text-slate-200 text-lg mb-1">Cifrado de Extremo a Extremo (E2EE)</h4>
+                                    <p class="text-slate-400 text-sm">Paradigma donde las claves se generan y almacenan exclusivamente en los dispositivos finales, impidiendo que servidores intermediarios accedan al texto en claro.</p>
+                                </div>
+
+                                <div class="p-4 bg-slate-900/50 rounded-lg border-l-4 border-indigo-500">
+                                    <h4 class="font-bold text-slate-200 text-lg mb-1">Protocolo MTProto</h4>
+                                    <p class="text-slate-400 text-sm">Protocolo propietario (homegrown) de Telegram. Combina cifrado simétrico AES de 256 bits, RSA de 2048 bits e intercambio Diffie-Hellman.</p>
+                                </div>
+
+                                <div class="p-4 bg-slate-900/50 rounded-lg border-l-4 border-purple-500">
+                                    <h4 class="font-bold text-slate-200 text-lg mb-1">Gestión de Claves (Key Management)</h4>
+                                    <p class="text-slate-400 text-sm">Procesos técnicos que rigen la generación, intercambio, almacenamiento, uso, rotación y destrucción de claves (Normado por NIST SP 800-57).</p>
+                                </div>
+                                
+                                <div class="p-4 bg-slate-900/50 rounded-lg border-l-4 border-teal-500">
+                                    <h4 class="font-bold text-slate-200 text-lg mb-1">Criptografía Aplicada</h4>
+                                    <p class="text-slate-400 text-sm">Estudio e implementación de construcciones matemáticas para proporcionar mecanismos lógicos que protejan datos e intrusos.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (activeTab === 'conclusiones') {
+                contentHTML = `
+                    <div class="space-y-6 animate-fade-in">
+                        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg">
+                            <h3 class="text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2">
+                                <i data-lucide="check-circle" class="w-5 h-5"></i> Conclusiones Clave
+                            </h3>
+                            <ul class="space-y-4 text-slate-300">
+                                <li class="flex items-start gap-3">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-400 mt-2 shrink-0"></div>
+                                    <p><strong>Hipótesis aceptada parcialmente:</strong> MTProto 2.0 tiene primitivas robustas pero presenta debilidades estructurales reales (UKS, ASA), aunque su explotación no es trivial en el uso cotidiano ordinario.</p>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="w-2 h-2 rounded-full bg-orange-400 mt-2 shrink-0"></div>
+                                    <p><strong>Cumplimiento NIST:</strong> Cumple ~60% de los controles NIST SP 800-57. No conformidad en los mecanismos de padding y el proceso de rekeying.</p>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="w-2 h-2 rounded-full bg-red-400 mt-2 shrink-0"></div>
+                                    <p><strong>Riesgo Arquitectural:</strong> La falta de E2EE por defecto es la mayor vulnerabilidad (V-06), permitiendo posible interceptación en servidores por parte de Telegram Inc. (relacionado al marco ENISA).</p>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-blue-900/20 p-5 rounded-xl border border-blue-500/30">
+                                <h4 class="text-lg font-bold text-blue-400 mb-3 flex items-center gap-2">
+                                    <i data-lucide="lightbulb" class="w-4 h-4"></i> Recomendaciones
+                                </h4>
+                                <ul class="text-sm text-blue-200 space-y-2">
+                                    <li><strong>Usuarios:</strong> Utilizar exclusivamente "chats secretos" para datos sensibles.</li>
+                                    <li><strong>Organizaciones:</strong> Restringir Telegram corporativo; preferir plataformas con E2EE por defecto (Signal, WhatsApp).</li>
+                                    <li><strong>Desarrolladores:</strong> Auditar exhaustivamente implementaciones de terceros (Telethon, Pyrogram).</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-purple-900/20 p-5 rounded-xl border border-purple-500/30">
+                                <h4 class="text-lg font-bold text-purple-400 mb-3 flex items-center gap-2">
+                                    <i data-lucide="telescope" class="w-4 h-4"></i> Líneas Futuras
+                                </h4>
+                                <ul class="text-sm text-purple-200 space-y-2 list-disc list-inside">
+                                    <li>Análisis comparativo formal con <strong>Signal Protocol</strong> (ProVerif/Tamarin).</li>
+                                    <li>Evaluación de mitigaciones de Telegram post-2023.</li>
+                                    <li>Análisis de la superficie de ataque en el ecosistema de <strong>Bots de Telegram</strong>.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (activeTab === 'guion') {
+                let slidesHTML = slidesGuion.map(slide => `
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-indigo-500/50 transition-colors shadow-lg relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                        <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-3 pl-3">
+                            <h4 class="font-bold text-indigo-300 text-lg">Slide ${slide.id}: ${slide.titulo}</h4>
+                            <span class="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-1 rounded border border-indigo-500/30 flex items-center gap-1 font-mono">
+                                <i data-lucide="clock" class="w-3 h-3"></i> ${slide.tiempo}
+                            </span>
+                        </div>
+                        <div class="mb-4 text-xs text-emerald-400 bg-emerald-500/10 p-2.5 rounded flex items-start gap-2 pl-3">
+                            <i data-lucide="monitor-play" class="w-4 h-4 shrink-0"></i>
+                            <span class="italic font-medium">${slide.accion}</span>
+                        </div>
+                        <div class="text-slate-200 text-sm border-l-2 border-slate-600 pl-4 py-1 italic leading-relaxed">
+                            "${slide.texto}"
+                        </div>
+                    </div>
+                `).join('');
+
+                contentHTML = `
+                    <div class="space-y-6 animate-fade-in">
+                        <div class="bg-indigo-900/20 p-6 rounded-xl border border-indigo-500/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-indigo-400 mb-1 flex items-center gap-2">
+                                    <i data-lucide="mic" class="w-5 h-5"></i> Guión de Exposición (10 Minutos)
+                                </h3>
+                                <p class="text-sm text-indigo-200">Recomendación: Alternen la exposición (1-5 Max, 6-10 Raúl) para mostrar dominio compartido.</p>
+                            </div>
+                            <div class="bg-slate-900 px-5 py-3 rounded-lg border border-slate-700 text-center shrink-0 shadow-inner">
+                                <span class="block text-xs text-slate-400 uppercase tracking-widest mb-1">Tiempo Total</span>
+                                <span class="font-mono text-2xl text-emerald-400 font-bold">10:00</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            ${slidesHTML}
+                        </div>
+                    </div>
+                `;
+            } else if (activeTab === 'preguntas') {
+                let preguntasHTML = bancoPreguntas.map(item => `
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 hover:border-yellow-500/50 transition-all flex flex-col h-full shadow-lg relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-500 to-orange-500"></div>
+                        <div class="flex items-center gap-2 mb-4 mt-1">
+                            <span class="bg-slate-900 border border-slate-600 text-slate-300 text-xs px-2.5 py-1 rounded-full uppercase font-bold tracking-wider">${item.tipo}</span>
+                        </div>
+                        <h4 class="font-bold text-slate-100 text-[15px] mb-4 leading-relaxed">${item.p}</h4>
+                        <div class="bg-slate-900/60 p-3.5 rounded-lg mb-4 border-l-4 border-emerald-500 flex-grow">
+                            <p class="text-sm text-slate-300 leading-relaxed"><strong class="text-emerald-400 block mb-1">Respuesta ideal:</strong> ${item.r}</p>
+                        </div>
+                        <div class="flex items-start gap-2.5 text-xs text-yellow-200 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20 mt-auto">
+                            <i data-lucide="lightbulb" class="w-4 h-4 shrink-0 text-yellow-400"></i>
+                            <span class="italic">${item.pista}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                contentHTML = `
+                    <div class="space-y-6 animate-fade-in">
+                        <div class="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 p-6 rounded-xl border border-yellow-500/30">
+                            <h3 class="text-xl font-bold text-yellow-400 mb-2 flex items-center gap-2">
+                                <i data-lucide="help-circle" class="w-6 h-6"></i> Simulador de Preguntas del Jurado
+                            </h3>
+                            <p class="text-sm text-yellow-100/70">Anticipación de escenarios basada en los enfoques de Matías (Método y BMIS) y Osvaldo.</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            ${preguntasHTML}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = contentHTML;
+            
+            // Re-renderizar los íconos de Lucide que acabamos de inyectar en el HTML
+            lucide.createIcons();
+        }
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTabs();
+            renderContent();
+        });
+    </script>
+</body>
+</html>
